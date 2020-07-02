@@ -21,7 +21,9 @@ dependencies {
 	compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '2.0.6.RELEASE'
 	// https://mvnrepository.com/artifact/com.h2database/h2
 	compile("com.h2database:h2:1.4.191")
-
+	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-security
+	compile group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.1.6.RELEASE'
+	
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}

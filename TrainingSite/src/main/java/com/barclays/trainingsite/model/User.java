@@ -31,12 +31,14 @@ public class User {
 	@JoinColumn(name = "User_Id")
 	private Set<Course> setOfCourse= new LinkedHashSet<Course>();
 	
+	private String role;
+	
 	public User() {
 		super();
 	}
 	
 	public User(int userId, @NotNull(message = "user name must not be null") String userName, String password,
-			String firstName, String lastName, boolean isActive, Set<Course> setOfCourse) {
+			String firstName, String lastName, boolean isActive, Set<Course> setOfCourse,String role) {
 		super();
 		this.userId = userId;
 		this.userName = userName;
@@ -45,6 +47,7 @@ public class User {
 		this.lastName = lastName;
 		this.isActive = isActive;
 		this.setOfCourse = setOfCourse;
+		this.role = role;
 	}
 
 	public int getUserId() {
@@ -93,4 +96,13 @@ public class User {
 	public void setSetOfCourse(Set<Course> setOfCourse) {
 		this.setOfCourse = setOfCourse;
 	}
+
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
+	}
+	
 }
