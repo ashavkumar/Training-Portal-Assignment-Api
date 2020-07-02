@@ -1,4 +1,4 @@
-package com.barclays.trainingsite.service.security;
+package com.barclays.trainingsite.security;
 
 import java.util.Arrays;
 import java.util.Collection;
