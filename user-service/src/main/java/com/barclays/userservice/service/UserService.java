@@ -4,8 +4,8 @@ import java.util.List;
 
 import com.barclays.userservice.exception.UserNotFoundException;
 import com.barclays.userservice.model.Course;
+import com.barclays.userservice.model.CourseRequest;
 import com.barclays.userservice.model.User;
-import com.barclays.userservice.model.UserCourse;
 import com.barclays.userservice.model.UserRequest;
 import com.barclays.userservice.response.UserResponse;
 
@@ -27,7 +27,7 @@ public interface UserService {
 	public List<User> getAllUsers();
 	public void deleteUser(int userId);
 	
-	public UserResponse<Course> purchaseCourse(UserCourse userCourse);
+	public UserResponse<Course> purchaseCourse(CourseRequest courseRequest);
 	
 	public List<Course> userWiseSubscription(int userId);
 	public List<User> courseWiseSubscription(int courseId);

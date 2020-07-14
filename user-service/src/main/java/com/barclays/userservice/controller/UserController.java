@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.barclays.userservice.model.UserCourse;
 import com.barclays.userservice.exception.UserNotFoundException;
 import com.barclays.userservice.model.Course;
+import com.barclays.userservice.model.CourseRequest;
 import com.barclays.userservice.model.User;
 import com.barclays.userservice.model.UserRequest;
 import com.barclays.userservice.response.UserResponse;
@@ -111,8 +112,8 @@ public class UserController {
 	}
 	
 	@RequestMapping(value="/subscribedcourse",method=RequestMethod.POST)
-	public ResponseEntity<UserResponse<Course>> subscribedCourse(@RequestBody UserCourse userCourse){
-		UserResponse<Course> userResponse=userService.purchaseCourse(userCourse);
+	public ResponseEntity<UserResponse<Course>> subscribedCourse(@RequestBody CourseRequest courseRequest){
+		UserResponse<Course> userResponse=userService.purchaseCourse(courseRequest);
 		return new ResponseEntity<UserResponse<Course>>(userResponse, HttpStatus.OK);
 	}
 	

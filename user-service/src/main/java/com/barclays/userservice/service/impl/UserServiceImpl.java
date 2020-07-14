@@ -8,11 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.barclays.userservice.dao.CourseRequestRepository;
 import com.barclays.userservice.dao.UserCourseRepository;
 import com.barclays.userservice.dao.UserRepository;
 import com.barclays.userservice.dao.UserRequestRepository;
 import com.barclays.userservice.exception.UserNotFoundException;
 import com.barclays.userservice.model.Course;
+import com.barclays.userservice.model.CourseRequest;
 import com.barclays.userservice.model.User;
 import com.barclays.userservice.model.UserCourse;
 import com.barclays.userservice.model.UserRequest;
@@ -28,6 +30,8 @@ public class UserServiceImpl implements UserService{
 	private UserRequestRepository userRequestRepository;
 	@Autowired
 	private UserCourseRepository userCourseRepository;
+	@Autowired
+	private CourseRequestRepository courseRequestRepository;
 	@Autowired
 	private RestTemplate restTemplate;
 	
@@ -154,23 +158,48 @@ public class UserServiceImpl implements UserService{
 		userRepository.save(user);
 	}
 	
+	/*
+	 * @Override public UserResponse<Course> purchaseCourse(UserCourse userCourse) {
+	 * User user=userRepository.findById(userCourse.getUserId()).get(); String
+	 * uri="http://localhost:9002/course/get/"+userCourse.getCourseId(); //Course
+	 * course=restTemplate.getForObject(uri, Course.class); Course course=new
+	 * Course("J2EE", 199, "Classroom", "less expensive", true);
+	 * System.out.println(course.toString()); Set<Course> set=user.getSetOfCourse();
+	 * if(set.add(course)==true && course.isActive()==true) {
+	 * user.setSetOfCourse(set); System.out.println(user);
+	 * userRepository.save(user); userCourse.setStatus("APPROVED");
+	 * userCourseRepository.save(userCourse); return new
+	 * UserResponse<>("You purchased this course successfully!!!",course); } else {
+	 * return new UserResponse<>("Already you have purchased it!!!",null); } }
+	 */
+	
 	@Override
-	public UserResponse<Course> purchaseCourse(UserCourse userCourse) {
-		User user=userRepository.findById(userCourse.getUserId()).get();
-		String uri="http://localhost:9002/course/get/"+userCourse.getCourseId();
+	public UserResponse<Course> purchaseCourse(CourseRequest courseRequest) {
+		User user=userRepository.findById(courseRequest.getUserId()).get();
+		String uri="http://localhost:9002/course/get/"+courseRequest.getCourseId();
 		Course course=restTemplate.getForObject(uri, Course.class);
-		System.out.println(course.toString());
-		Set<Course> set=user.getSetOfCourse();
-		if(set.add(course)==true  && course.isActive()==true) {
-			user.setSetOfCourse(set);
-			//userRepository.save(user);
-			userCourse.setStatus("APPROVED");
+		Set<Integer> set=user.getCourses();
+		if(set.add(courseRequest.getCourseId())==true  && course.isActive()==true) {
+			user.setCourse(set);
+			userRepository.save(user);
+			
+			courseRequest.setStatus("Approved");
+			courseRequestRepository.save(courseRequest);
+			
+			UserCourse userCourse=new UserCourse();
+			userCourse.setCousreId(courseRequest.getCourseId());
+			userCourse.setCourseName(courseRequest.getCourseName());
+			userCourse.setUserId(courseRequest.getUserId());
 			userCourseRepository.save(userCourse);
+			
 			return new UserResponse<>("You purchased this course successfully!!!",course);
-		}
-		else {
-			return new UserResponse<>("Already you have purchased it!!!",null);
-		}
+		
+		  } else { 
+			  	courseRequest.setStatus("Request Cancelled");
+				courseRequestRepository.save(courseRequest);
+			  return new UserResponse<>("Already you have purchased it!!!",null);
+		  }
+		 
 	}
 	
 	@Override

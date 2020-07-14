@@ -20,6 +20,16 @@ public class Course {
 	public Course() {
 		super();
 	}
+	
+	public Course(String courseName, double courseCost, String courseType, String courseDiscription, boolean isActive) {
+		super();
+		this.courseName = courseName;
+		this.courseCost = courseCost;
+		this.courseType = courseType;
+		this.courseDiscription = courseDiscription;
+		this.isActive = isActive;
+	}
+
 	public Course(int courseId, String courseName, double courseCost, String courseType, String courseDiscription,
 			boolean isActive) {
 		super();
@@ -66,5 +76,11 @@ public class Course {
 	}
 	public void setActive(boolean isActive) {
 		this.isActive = isActive;
+	}
+	@Override
+	public String toString() {
+		return "Course [courseId=" + courseId + ", courseName=" + courseName + ", courseCost=" + courseCost
+				+ ", courseType=" + courseType + ", courseDiscription=" + courseDiscription + ", isActive=" + isActive
+				+ "]";
 	}
 }

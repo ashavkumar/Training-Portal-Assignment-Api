@@ -1,70 +1,68 @@
 package com.barclays.userservice.model;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class UserCourse {
+public class CourseRequest {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	
-	@Column(name = "User_Id")
-	private int userId;
-	@Column(name = "Course_Id")
 	private int courseId;
 	private String courseName;
+	private int userId;
+	private String status;
 	
-	public UserCourse() {
+	public CourseRequest() {
 		super();
 	}
-	
-	public UserCourse(int id, int userId, int courseId, String courseName) {
+	public CourseRequest(int id, int courseId, String courseName, int userId, String status) {
 		super();
 		this.id = id;
-		this.userId = userId;
 		this.courseId = courseId;
 		this.courseName = courseName;
+		this.userId = userId;
+		this.status = status;
 	}
-
+	
 	public int getId() {
 		return id;
 	}
 	public void setId(int id) {
 		this.id = id;
 	}
-	
-	public int getUserId() {
-		return userId;
-	}
-
-	public void setUserId(int userId) {
-		this.userId = userId;
-	}
-
 	public int getCourseId() {
 		return courseId;
 	}
-
-	public void setCousreId(int courseId) {
+	public void setCourseId(int courseId) {
 		this.courseId = courseId;
 	}
-
 	public String getCourseName() {
 		return courseName;
 	}
 	public void setCourseName(String courseName) {
 		this.courseName = courseName;
 	}
-
+	public int getUserId() {
+		return userId;
+	}
+	public void setUserId(int userId) {
+		this.userId = userId;
+	}
+	public String getStatus() {
+		return status;
+	}
+	public void setStatus(String status) {
+		this.status = status;
+	}
 	@Override
 	public String toString() {
-		return "UserCourse [id=" + id + ", userId=" + userId + ", courseId=" + courseId + ", courseName=" + courseName
-				+ "]";
+		return "CourseRequest [id=" + id + ", courseId=" + courseId + ", courseName=" + courseName + ", userId="
+				+ userId + ", status=" + status + "]";
 	}
 	
 }
