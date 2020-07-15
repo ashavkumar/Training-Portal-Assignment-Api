@@ -21,14 +21,13 @@ public interface UserService {
 	public void updateUserProfile(UserRequest userRequest) throws UserNotFoundException;
 	public UserResponse<User> approvalForUpdateUserProfile(int userRequestId);
 	
-	public UserResponse<User> makeDisableOrEnable(int userId) throws UserNotFoundException;
+	public UserResponse<User> makeDisableOrEnableUser(int userId) throws UserNotFoundException;
 	
 	public User getUser(int userId) throws UserNotFoundException;
 	public List<User> getAllUsers();
 	public void deleteUser(int userId);
 	
 	public UserResponse<Course> purchaseCourse(CourseRequest courseRequest);
-	
 	public List<Course> userWiseSubscription(int userId);
 	public List<User> courseWiseSubscription(int courseId);
 	

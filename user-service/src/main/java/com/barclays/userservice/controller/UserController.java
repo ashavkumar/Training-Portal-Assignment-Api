@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.barclays.userservice.model.UserCourse;
 import com.barclays.userservice.exception.UserNotFoundException;
 import com.barclays.userservice.model.Course;
 import com.barclays.userservice.model.CourseRequest;
@@ -79,15 +78,9 @@ public class UserController {
 	}
 	
 	@RequestMapping(value="/actionformakedisableorenable/{userId}",method=RequestMethod.GET)
-	public ResponseEntity<UserResponse<User>> makeDisableOrEnable(@PathVariable("userId") int userId) throws UserNotFoundException{
-		UserResponse<User> userResponse=userService.makeDisableOrEnable(userId);
+	public ResponseEntity<UserResponse<User>> makeDisableOrEnableUser(@PathVariable("userId") int userId) throws UserNotFoundException{
+		UserResponse<User> userResponse=userService.makeDisableOrEnableUser(userId);
 		return new ResponseEntity<UserResponse<User>>(userResponse,HttpStatus.OK);
-	}
-	
-	@RequestMapping(value="/userwisesubscription/{userId}",method=RequestMethod.GET)
-	public ResponseEntity<List<Course>> userWiseSubscription(@PathVariable("userId") int userId){
-		List<Course> listOfCourse=userService.userWiseSubscription(userId);
-		return new ResponseEntity<List<Course>>(listOfCourse,HttpStatus.OK);
 	}
 	
 	@RequestMapping(value="/get/{userId}",method = RequestMethod.GET)
@@ -115,6 +108,12 @@ public class UserController {
 	public ResponseEntity<UserResponse<Course>> subscribedCourse(@RequestBody CourseRequest courseRequest){
 		UserResponse<Course> userResponse=userService.purchaseCourse(courseRequest);
 		return new ResponseEntity<UserResponse<Course>>(userResponse, HttpStatus.OK);
+	}
+	
+	@RequestMapping(value="/userwisesubscription/{userId}",method=RequestMethod.GET)
+	public ResponseEntity<List<Course>> userWiseSubscription(@PathVariable("userId") int userId){
+		List<Course> listOfCourse=userService.userWiseSubscription(userId);
+		return new ResponseEntity<List<Course>>(listOfCourse,HttpStatus.OK);
 	}
 	
 	@RequestMapping(value="/coursewisesubscription/{courseId}",method=RequestMethod.GET)

@@ -48,9 +48,14 @@ public class UserServiceImpl implements UserService{
 	public UserResponse<UserRequest> approvalForUser(int userRequestId) {
 		UserRequest userRequest=userRequestRepository.findById(userRequestId).get();
 		if(userRequest.getUsername().length()<5) {
-			userRequest.setStatus("REJECTED");
+			userRequest.setStatus("REJECTED-Username length was less than 5");
 			userRequest=userRequestRepository.save(userRequest);
-			return new UserResponse<>("Please insert username of atleast 5 length",userRequest);
+			return new UserResponse<>("Please insert username of atleast 5 length!!!",userRequest);
+		}
+		else if( userRequest.getPassword().matches("[A-Z][a-z]{3,}[0-9]{1,}[!@#$%&*]")==false) {
+			userRequest.setStatus("REJECTED-Password was not following standards");
+			userRequest=userRequestRepository.save(userRequest);
+			return new UserResponse<>("Passwaord should be consists of 1 uppercase,1 digit & 1 special character!!!",userRequest);
 		}
 		else {
 			User user=new User();
@@ -58,10 +63,10 @@ public class UserServiceImpl implements UserService{
 			user.setFirstName(userRequest.getFirstname());
 			user.setLastName(userRequest.getLastname());
 			user.setPassword(userRequest.getPassword());
-			user.setRole(userRequest.getRole());
+			user.setRole("ROLE_USER");
 			user.setActive(true);
 			userRepository.save(user);
-			userRequest.setStatus("APPROVED");
+			userRequest.setStatus("APPROVED-Every thing was proper.");
 			userRequest=userRequestRepository.save(userRequest);
 			return new UserResponse<UserRequest>("Registered Successfully",userRequest);
 		}
@@ -76,16 +81,16 @@ public class UserServiceImpl implements UserService{
 	@Override
 	public String approvalForPasswordReset(int userRequestId) {
 		UserRequest userRequest=userRequestRepository.findById(userRequestId).get();
-		if(userRequest.getPassword().matches("([A-Z][a-z]{3,}[0-9]{0,})\\w")) {
+		if(userRequest.getPassword().matches("[A-Z][a-z]{3,}[0-9]{1,}[!@#$%&*]")) {
 			User user=userRepository.findByUserName(userRequest.getUsername());
 			user.setPassword(userRequest.getPassword());
 			userRepository.save(user);
-			userRequest.setStatus("APPROVED");
+			userRequest.setStatus("Approved for the password reset request");
 			userRequestRepository.save(userRequest);
 			return "Password has been reset successfully";
 		}
 		else {
-			userRequest.setStatus("REJECTED");
+			userRequest.setStatus("REJECTED-Password was not following given standards.");
 			userRequestRepository.save(userRequest);
 			return "Please make sure that passsword is of correct pattern!!!";
 		}
@@ -106,43 +111,27 @@ public class UserServiceImpl implements UserService{
 		if(userRequest.getLastname()!=null)
 			user.setLastName(userRequest.getLastname());
 		user=userRepository.save(user);
-		return new UserResponse<>("Your profile has been updated successfully",user);
+		return new UserResponse<>("Profile has been updated successfully!!!",user);
 	}
 	
 	@Override
-	public UserResponse<User> makeDisableOrEnable(int userId) throws UserNotFoundException {
-		User user=userRepository.findById(userId).orElseThrow(()->new UserNotFoundException("Invalid User Id"+userId));
+	public UserResponse<User> makeDisableOrEnableUser(int userId) throws UserNotFoundException {
+		User user=userRepository.findById(userId).orElseThrow(()->new UserNotFoundException("Invalid User Id.Please ty again!!!"+userId));
 		if(user.isActive()==true) {
 			user.setActive(false);
 			user=userRepository.save(user);
-			return new UserResponse<>("Now user has been disabled",user);
+			return new UserResponse<>("Now user has been disabled!!!",user);
 		}
 		else {
 			user.setActive(true);
 			user=userRepository.save(user);
-			return new UserResponse<>("Now user has been enabled",user);
+			return new UserResponse<>("Now user has been enabled!!!",user);
 		}
 	}	
-	
-	@Override
-	public List<Course> userWiseSubscription(int userId) {
-		List<Course> listOfCourse=new ArrayList<>();
 		
-		
-		List<Integer> listOfCourseId=userCourseRepository.userWiseSubscription(userId);
-
-		
-		for(int i:listOfCourseId) {
-			//Course course=courseRepository.findById(i).get();
-			Course course=restTemplate.getForObject("http://localhost:9002/course/get/{courseId}", Course.class, i);
-			listOfCourse.add(course);
-		}
-		return listOfCourse;
-	}
-	
 	@Override
 	public User getUser(int userId) throws UserNotFoundException{
-		User user=userRepository.findById(userId).orElseThrow(()->new UserNotFoundException("Invalid user id "+userId));
+		User user=userRepository.findById(userId).orElseThrow(()->new UserNotFoundException("Invalid user id.Please try again!!! "+userId));
 		return user;
 	}
 	
@@ -154,8 +143,13 @@ public class UserServiceImpl implements UserService{
 	@Override
 	public void deleteUser(int userId) {
 		User user=userRepository.findById(userId).get();
-		user.setActive(false);
-		userRepository.save(user);
+		if(user.isActive()==true) {
+			user.setActive(false);
+			userRepository.save(user);
+		}
+		else {
+			userRepository.deleteById(userId);
+		}
 	}
 	
 	/*
@@ -193,15 +187,25 @@ public class UserServiceImpl implements UserService{
 			userCourseRepository.save(userCourse);
 			
 			return new UserResponse<>("You purchased this course successfully!!!",course);
-		
-		  } else { 
-			  	courseRequest.setStatus("Request Cancelled");
-				courseRequestRepository.save(courseRequest);
-			  return new UserResponse<>("Already you have purchased it!!!",null);
+		} else {
+			courseRequest.setStatus("Request Cancelled");
+			courseRequestRepository.save(courseRequest);
+			return new UserResponse<>("Already you have purchased it! Please go through your subscription list!!!",course);
 		  }
-		 
 	}
 	
+	@Override
+	public List<Course> userWiseSubscription(int userId) {
+		
+		List<Course> listOfCourse=new ArrayList<>();
+		List<Integer> listOfCourseId=userCourseRepository.userWiseSubscription(userId);
+		for(int i:listOfCourseId) {
+			Course course=restTemplate.getForObject("http://localhost:9002/course/get/{courseId}", Course.class, i);
+			listOfCourse.add(course);
+		}
+		return listOfCourse;
+	}
+
 	@Override
 	public List<User> courseWiseSubscription(int courseId){
 		List<User> listOfUser=new ArrayList<>();
