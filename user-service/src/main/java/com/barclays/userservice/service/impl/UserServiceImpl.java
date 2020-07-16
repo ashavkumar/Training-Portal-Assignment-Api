@@ -2,6 +2,7 @@ package com.barclays.userservice.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import com.barclays.userservice.dao.UserCourseRepository;
 import com.barclays.userservice.dao.UserRepository;
 import com.barclays.userservice.dao.UserRequestRepository;
 import com.barclays.userservice.exception.UserNotFoundException;
+import com.barclays.userservice.exception.UserRequestNotFoundException;
 import com.barclays.userservice.model.Course;
 import com.barclays.userservice.model.CourseRequest;
 import com.barclays.userservice.model.User;
@@ -44,31 +46,44 @@ public class UserServiceImpl implements UserService{
 	public List<UserRequest> getAllRegisterRequests(){
 		return userRequestRepository.findAll();
 	}
+	
 	@Override
-	public UserResponse<UserRequest> approvalForUser(int userRequestId) {
-		UserRequest userRequest=userRequestRepository.findById(userRequestId).get();
-		if(userRequest.getUsername().length()<5) {
-			userRequest.setStatus("REJECTED-Username length was less than 5");
-			userRequest=userRequestRepository.save(userRequest);
-			return new UserResponse<>("Please insert username of atleast 5 length!!!",userRequest);
-		}
-		else if( userRequest.getPassword().matches("[A-Z][a-z]{3,}[0-9]{1,}[!@#$%&*]")==false) {
-			userRequest.setStatus("REJECTED-Password was not following standards");
-			userRequest=userRequestRepository.save(userRequest);
-			return new UserResponse<>("Passwaord should be consists of 1 uppercase,1 digit & 1 special character!!!",userRequest);
+	public UserResponse<UserRequest> approvalForUser(int userRequestId) throws UserRequestNotFoundException {
+		UserRequest userRequest=userRequestRepository.findById(userRequestId).orElseThrow(()->new UserRequestNotFoundException("No Request raised yet"+userRequestId));
+		Optional<UserRequest> checkNull =  Optional.ofNullable(userRequest);
+		if(checkNull.isPresent()) {
+			if(userRequest.getStatus().startsWith("APPLIED")) {
+				if(userRequest.getUsername().length()<5) {
+					userRequest.setStatus("REJECTED-Username length was less than 5");
+					userRequest=userRequestRepository.save(userRequest);
+					return new UserResponse<>("Please insert username of atleast 5 length!!!",userRequest);
+				}
+				else if( userRequest.getPassword().matches("[A-Z][a-z]{3,}[0-9]{1,}[!@#$%&*]")==false) {
+					userRequest.setStatus("REJECTED-Password was not following standards");
+					userRequest=userRequestRepository.save(userRequest);
+					return new UserResponse<>("Passwaord should be consists of 1 uppercase,1 digit & 1 special character!!!",userRequest);
+				}
+				else {
+					User user=new User();
+					user.setUserName(userRequest.getUsername());
+					user.setFirstName(userRequest.getFirstname());
+					user.setLastName(userRequest.getLastname());
+					user.setPassword(userRequest.getPassword());
+					user.setRole("ROLE_USER");
+					user.setActive(true);
+					userRepository.save(user);
+					
+					userRequest.setStatus("APPROVED-Every thing was proper.");
+					userRequest=userRequestRepository.save(userRequest);
+					return new UserResponse<UserRequest>("Registered Successfully",userRequest);
+				}
+			}
+			else {
+				return new UserResponse<UserRequest>("Request has been declined or approved, Invalid Request!!!",userRequest);
+			}
 		}
 		else {
-			User user=new User();
-			user.setUserName(userRequest.getUsername());
-			user.setFirstName(userRequest.getFirstname());
-			user.setLastName(userRequest.getLastname());
-			user.setPassword(userRequest.getPassword());
-			user.setRole("ROLE_USER");
-			user.setActive(true);
-			userRepository.save(user);
-			userRequest.setStatus("APPROVED-Every thing was proper.");
-			userRequest=userRequestRepository.save(userRequest);
-			return new UserResponse<UserRequest>("Registered Successfully",userRequest);
+			return new UserResponse<UserRequest>("No Pending request, Invalid request!!!",userRequest);
 		}
 	}
 	
@@ -116,7 +131,7 @@ public class UserServiceImpl implements UserService{
 	
 	@Override
 	public UserResponse<User> makeDisableOrEnableUser(int userId) throws UserNotFoundException {
-		User user=userRepository.findById(userId).orElseThrow(()->new UserNotFoundException("Invalid User Id.Please ty again!!!"+userId));
+		User user=userRepository.findById(userId).orElseThrow(()->new UserNotFoundException("Invalid User Id.Please try again!!!"+userId));
 		if(user.isActive()==true) {
 			user.setActive(false);
 			user=userRepository.save(user);
@@ -173,7 +188,12 @@ public class UserServiceImpl implements UserService{
 		String uri="http://localhost:9002/course/get/"+courseRequest.getCourseId();
 		Course course=restTemplate.getForObject(uri, Course.class);
 		Set<Integer> set=user.getCourses();
-		if(set.add(courseRequest.getCourseId())==true  && course.isActive()==true) {
+		if(course.isActive()==false) {
+			courseRequest.setStatus("Request Cancelled- Course for which user was requesting isn't available.");
+			courseRequestRepository.save(courseRequest);
+			return new UserResponse<>("Course isn't available!!!",course);
+		}
+		else if(set.add(courseRequest.getCourseId())==true) {
 			user.setCourse(set);
 			userRepository.save(user);
 			
@@ -188,9 +208,9 @@ public class UserServiceImpl implements UserService{
 			
 			return new UserResponse<>("You purchased this course successfully!!!",course);
 		} else {
-			courseRequest.setStatus("Request Cancelled");
+			courseRequest.setStatus("Request Cancelled- Already purchased.");
 			courseRequestRepository.save(courseRequest);
-			return new UserResponse<>("Already you have purchased it! Please go through your subscription list!!!",course);
+			return new UserResponse<>("Already you have purchased it! Please go through your subscription!!!",course);
 		  }
 	}
 	
@@ -216,4 +236,12 @@ public class UserServiceImpl implements UserService{
 		}
 		return listOfUser;
 	}
+	
+	@Override
+	public String removeCourseFromCatalogue(int courseId) {
+		String uri="http://localhost:9002/course/removecourse/"+courseId;
+		String responseMsg=restTemplate.getForObject(uri, String.class);
+		return responseMsg;
+	}
+
 }

@@ -10,6 +10,6 @@ public interface CourseService {
 	public Course registerCourse(Course course);
 	public Course getCourse(int cId) throws CourseNotFoundException;
 	public List<Course> getAllCourses();
-	public void deleteCourse(int courseId);
+	public void removeCourse(int courseId);
 	public void updateCourse(int courseId,Course course) throws CourseNotFoundException;
 }

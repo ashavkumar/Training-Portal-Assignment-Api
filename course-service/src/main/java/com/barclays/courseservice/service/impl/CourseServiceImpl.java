@@ -33,10 +33,10 @@ public class CourseServiceImpl implements CourseService{
 	}
 	
 	@Override
-	public void deleteCourse(int courseId) {
+	public void removeCourse(int courseId) {
 		Course course=courseRepository.findById(courseId).get();
 		course.setActive(false);
-		courseRepository.save(course);
+		course=courseRepository.save(course);
 	}
 	
 	

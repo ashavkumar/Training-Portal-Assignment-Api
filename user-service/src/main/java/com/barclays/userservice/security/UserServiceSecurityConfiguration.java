@@ -31,14 +31,17 @@ public class UserServiceSecurityConfiguration extends WebSecurityConfigurerAdapt
 				//.antMatchers("/course/register").permitAll();
 				authorizeRequests()
 					.antMatchers("/user/register").permitAll()
-					.antMatchers("/user/get/registerrequests").hasRole("ADMIN")
-					.antMatchers("/user/actionforregistration/{userRequestId}").hasRole("ADMIN")
-					.antMatchers("/user/reset/password").hasRole("USER")
-					.antMatchers("/actionformakedisableorenable/{userId}").hasRole("ADMIN")
-					.antMatchers("/userwisesubscription/{userId}").hasAnyRole("USER","ADMIN")
-					.antMatchers("/user/get/{userId}").hasAnyRole("USER","ADMIN")
-					.antMatchers("/user/getall").hasRole("ADMIN")
-					.antMatchers("/user/delete/{userId}").hasRole("ADMIN")
+				/*
+				 * .antMatchers("/user-service/get/registerrequests").hasRole("ADMIN")
+				 * .antMatchers("/user-service/actionforregistration/{userRequestId}").hasRole(
+				 * "ADMIN") .antMatchers("/user-service/reset/password").hasRole("USER")
+				 * .antMatchers("/user-service/actionformakedisableorenable/{userId}").hasRole(
+				 * "ADMIN")
+				 * .antMatchers("/userwisesubscription/{userId}").hasAnyRole("USER","ADMIN")
+				 * .antMatchers("/user/get/{userId}").hasAnyRole("USER","ADMIN")
+				 * .antMatchers("/user/getall").hasRole("ADMIN")
+				 * .antMatchers("/user/delete/{userId}").hasRole("ADMIN")
+				 */
 					.and() .formLogin()
 					.and().csrf().disable();
 		/*

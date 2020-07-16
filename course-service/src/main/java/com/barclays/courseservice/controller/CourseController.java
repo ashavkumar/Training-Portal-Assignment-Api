@@ -40,9 +40,10 @@ public class CourseController {
 		return new ResponseEntity<List<Course>>(courses, HttpStatus.OK);
 	}
 	
-	@RequestMapping(value="/delete/{courseId}",method=RequestMethod.DELETE)
-	public ResponseEntity<String> deleteCourses(@PathVariable("courseId") int courseId){
-		courseService.deleteCourse(courseId);
-		return new ResponseEntity<String>("The course has been deleted successfully", HttpStatus.OK);
-	}	
+	@RequestMapping(value="/removecourse/{courseId}",method=RequestMethod.GET)
+	public String removeCourse(@PathVariable("courseId") int courseId){
+		courseService.removeCourse(courseId);
+		return "The course has been removed from catalogue successfully!!!";
+	}
+	
 }

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.barclays.userservice.exception.UserNotFoundException;
+import com.barclays.userservice.exception.UserRequestNotFoundException;
 import com.barclays.userservice.model.Course;
 import com.barclays.userservice.model.CourseRequest;
 import com.barclays.userservice.model.User;
@@ -48,7 +49,7 @@ public class UserController {
 	}
 	
 	@RequestMapping(value="/actionforregistration/{userRequestId}", method = RequestMethod.GET)
-	public ResponseEntity<UserResponse<UserRequest>> approvalForUser(@PathVariable("userRequestId") int userRequestId){
+	public ResponseEntity<UserResponse<UserRequest>> approvalForUser(@PathVariable("userRequestId") int userRequestId) throws UserRequestNotFoundException{
 		UserResponse<UserRequest> userResponse= userService.approvalForUser(userRequestId);
 		return new ResponseEntity<UserResponse<UserRequest>>(userResponse,HttpStatus.OK);
 	}
@@ -120,5 +121,11 @@ public class UserController {
 	public ResponseEntity<List<User>> courseWiseSubscription(@PathVariable("courseId") int courseId){
 		List<User> listOfUser=userService.courseWiseSubscription(courseId);
 		return new ResponseEntity<List<User>>(listOfUser,HttpStatus.OK);
+	}
+	
+	@RequestMapping(value = "/removecourse/{courseId}",method=RequestMethod.GET)
+	public ResponseEntity<String> removeCourseFromCatalogue(@PathVariable("courseId") int courseId){
+		String responseMsg=userService.removeCourseFromCatalogue(courseId);
+		return new ResponseEntity<String>(responseMsg,HttpStatus.OK);
 	}
 }
