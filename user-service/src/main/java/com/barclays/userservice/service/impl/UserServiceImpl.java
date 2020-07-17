@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.barclays.userservice.dao.CourseRequestRepository;
@@ -49,11 +50,16 @@ public class UserServiceImpl implements UserService{
 	
 	@Override
 	public UserResponse<UserRequest> approvalForUser(int userRequestId) throws UserRequestNotFoundException {
-		UserRequest userRequest=userRequestRepository.findById(userRequestId).orElseThrow(()->new UserRequestNotFoundException("No Request raised yet"+userRequestId));
+		UserRequest userRequest=userRequestRepository.findById(userRequestId).orElseThrow(()->new UserRequestNotFoundException("No Request has raised yet!!! Inappropriate action"+userRequestId));
 		Optional<UserRequest> checkNull =  Optional.ofNullable(userRequest);
 		if(checkNull.isPresent()) {
 			if(userRequest.getStatus().startsWith("APPLIED")) {
-				if(userRequest.getUsername().length()<5) {
+				if(userRequest.getUsername()==null || userRequest.getPassword()==null || userRequest.getFirstname()==null || userRequest.getLastname()==null) {
+					userRequest.setStatus("REJECTED-Incomplete details given.");
+					userRequest=userRequestRepository.save(userRequest);
+					return new UserResponse<>("Please fill all the details & Try again!!!",userRequest);
+				}
+				else if(userRequest.getUsername().length()<5) {
 					userRequest.setStatus("REJECTED-Username length was less than 5");
 					userRequest=userRequestRepository.save(userRequest);
 					return new UserResponse<>("Please insert username of atleast 5 length!!!",userRequest);
@@ -73,7 +79,7 @@ public class UserServiceImpl implements UserService{
 					user.setActive(true);
 					userRepository.save(user);
 					
-					userRequest.setStatus("APPROVED-Every thing was proper.");
+					userRequest.setStatus("APPROVED-Every thing was appropriate.");
 					userRequest=userRequestRepository.save(userRequest);
 					return new UserResponse<UserRequest>("Registered Successfully",userRequest);
 				}
@@ -94,20 +100,31 @@ public class UserServiceImpl implements UserService{
 	}
 	
 	@Override
-	public String approvalForPasswordReset(int userRequestId) {
-		UserRequest userRequest=userRequestRepository.findById(userRequestId).get();
-		if(userRequest.getPassword().matches("[A-Z][a-z]{3,}[0-9]{1,}[!@#$%&*]")) {
-			User user=userRepository.findByUserName(userRequest.getUsername());
-			user.setPassword(userRequest.getPassword());
-			userRepository.save(user);
-			userRequest.setStatus("Approved for the password reset request");
-			userRequestRepository.save(userRequest);
-			return "Password has been reset successfully";
+	public String approvalForPasswordReset(int userRequestId) throws UserRequestNotFoundException{
+		UserRequest userRequest=userRequestRepository.findById(userRequestId).orElseThrow(()->new UserRequestNotFoundException("No Request has raised yet!!! Inappropriate action "+userRequestId));
+		Optional<UserRequest> checkNull =  Optional.ofNullable(userRequest);
+		if(checkNull.isPresent()) {
+			if(userRequest.getStatus().startsWith("APPLIED")) {
+				if(userRequest.getPassword().matches("[A-Z][a-z]{3,}[0-9]{1,}[!@#$%&*]")) {
+					User user=userRepository.findByUserName(userRequest.getUsername());
+					user.setPassword(userRequest.getPassword());
+					userRepository.save(user);
+					userRequest.setStatus("Approved for the password reset request");
+					userRequestRepository.save(userRequest);
+					return "Password has been reset successfully";
+				}
+				else {
+					userRequest.setStatus("REJECTED-Password was not following given standards.");
+					userRequestRepository.save(userRequest);
+					return "Please make sure that passsword is of correct pattern!!!";
+				}
+			}
+			else {
+				return "Request has been declined or approved, Invalid Request!!!";
+			}
 		}
 		else {
-			userRequest.setStatus("REJECTED-Password was not following given standards.");
-			userRequestRepository.save(userRequest);
-			return "Please make sure that passsword is of correct pattern!!!";
+			return "No Pending request, Invalid request!!!";
 		}
 	}
 	
@@ -130,24 +147,32 @@ public class UserServiceImpl implements UserService{
 	}
 	
 	@Override
-	public UserResponse<User> makeDisableOrEnableUser(int userId) throws UserNotFoundException {
+	public UserResponse<User> makeUserDisable(int userId) throws UserNotFoundException {
+		
 		User user=userRepository.findById(userId).orElseThrow(()->new UserNotFoundException("Invalid User Id.Please try again!!!"+userId));
 		if(user.isActive()==true) {
 			user.setActive(false);
 			user=userRepository.save(user);
-			return new UserResponse<>("Now user has been disabled!!!",user);
+			return new UserResponse<>("User has been disabled successfully!!!",user);
 		}
-		else {
+		return new UserResponse<>("This user already disabled!!!",user);
+	}
+	
+	@Override
+	public UserResponse<User> makeUserEnable(int userId) throws UserNotFoundException {
+		
+		User user=userRepository.findById(userId).orElseThrow(()->new UserNotFoundException("Invalid User Id.Please try again!!!"+userId));
+		if(user.isActive()==false) {
 			user.setActive(true);
 			user=userRepository.save(user);
-			return new UserResponse<>("Now user has been enabled!!!",user);
+			return new UserResponse<>("User has been enabled successfully!!!",user);
 		}
-	}	
-		
+		return new UserResponse<>("This user already enabled!!!",user);
+	}
+	
 	@Override
 	public User getUser(int userId) throws UserNotFoundException{
-		User user=userRepository.findById(userId).orElseThrow(()->new UserNotFoundException("Invalid user id.Please try again!!! "+userId));
-		return user;
+		return userRepository.findById(userId).orElseThrow(()->new UserNotFoundException("Invalid User Id, User doesn't exist!!! "+userId));
 	}
 	
 	@Override
@@ -156,37 +181,24 @@ public class UserServiceImpl implements UserService{
 	}
 	
 	@Override
-	public void deleteUser(int userId) {
-		User user=userRepository.findById(userId).get();
+	public String removeUser(int userId) throws UserNotFoundException {
+		User user=userRepository.findById(userId).orElseThrow(()->new UserNotFoundException("Invalid userId,User dosn't exist!!! "+userId));
 		if(user.isActive()==true) {
 			user.setActive(false);
 			userRepository.save(user);
+			return "The User has removed successfully!!!";
 		}
-		else {
-			userRepository.deleteById(userId);
-		}
+		return "This user already removed!!!";
 	}
 	
-	/*
-	 * @Override public UserResponse<Course> purchaseCourse(UserCourse userCourse) {
-	 * User user=userRepository.findById(userCourse.getUserId()).get(); String
-	 * uri="http://localhost:9002/course/get/"+userCourse.getCourseId(); //Course
-	 * course=restTemplate.getForObject(uri, Course.class); Course course=new
-	 * Course("J2EE", 199, "Classroom", "less expensive", true);
-	 * System.out.println(course.toString()); Set<Course> set=user.getSetOfCourse();
-	 * if(set.add(course)==true && course.isActive()==true) {
-	 * user.setSetOfCourse(set); System.out.println(user);
-	 * userRepository.save(user); userCourse.setStatus("APPROVED");
-	 * userCourseRepository.save(userCourse); return new
-	 * UserResponse<>("You purchased this course successfully!!!",course); } else {
-	 * return new UserResponse<>("Already you have purchased it!!!",null); } }
-	 */
-	
 	@Override
-	public UserResponse<Course> purchaseCourse(CourseRequest courseRequest) {
-		User user=userRepository.findById(courseRequest.getUserId()).get();
+	public UserResponse<Course> purchaseCourse(CourseRequest courseRequest) throws HttpClientErrorException ,UserNotFoundException{
+		Course course=null;
+		User user=userRepository.findById(courseRequest.getUserId()).orElseThrow(()->new UserNotFoundException("Invalid UserId, User doesn't exist!!! "+courseRequest.getUserId()));
+		
 		String uri="http://localhost:9002/course/get/"+courseRequest.getCourseId();
-		Course course=restTemplate.getForObject(uri, Course.class);
+		course=restTemplate.getForObject(uri,Course.class);
+		
 		Set<Integer> set=user.getCourses();
 		if(course.isActive()==false) {
 			courseRequest.setStatus("Request Cancelled- Course for which user was requesting isn't available.");
@@ -215,30 +227,51 @@ public class UserServiceImpl implements UserService{
 	}
 	
 	@Override
-	public List<Course> userWiseSubscription(int userId) {
+	public List<Course> userWiseSubscription(int userId) throws UserNotFoundException,HttpClientErrorException {
 		
-		List<Course> listOfCourse=new ArrayList<>();
-		List<Integer> listOfCourseId=userCourseRepository.userWiseSubscription(userId);
-		for(int i:listOfCourseId) {
-			Course course=restTemplate.getForObject("http://localhost:9002/course/get/{courseId}", Course.class, i);
-			listOfCourse.add(course);
-		}
-		return listOfCourse;
+		  getUser(userId);
+		  
+		  List<Course> listOfCourse=new ArrayList<>(); 
+		  List<Integer> listOfCourseId=userCourseRepository.userWiseSubscription(userId);
+		  
+		  Optional<List<Integer>> checkNull = Optional.ofNullable(listOfCourseId);
+		  
+		  if(checkNull.isPresent()) { 
+			  for(int i:listOfCourseId) {
+				  String uri="http://localhost:9002/course/get/"+i;
+				  Course course=restTemplate.getForObject(uri,Course.class);
+				  listOfCourse.add(course); 
+				 }
+			  return listOfCourse;
+		  }
+		  else { 
+			  return listOfCourse;
+		  } 
 	}
 
 	@Override
-	public List<User> courseWiseSubscription(int courseId){
+	public List<User> courseWiseSubscription(int courseId) throws HttpClientErrorException , UserNotFoundException{
+		
+		String uri="http://localhost:9002/course/get/"+courseId;
+		restTemplate.getForObject(uri, Course.class);
+		
 		List<User> listOfUser=new ArrayList<>();
 		List<Integer> listOfUserId=userCourseRepository.courseWiseSubscription(courseId);
-		for(int i:listOfUserId) {
-			User user=userRepository.findById(i).get();
-			listOfUser.add(user);
+		Optional<List<Integer>> checkNull = Optional.ofNullable(listOfUserId);
+		if(checkNull.isPresent()) {
+			for(int i:listOfUserId) {
+				User user=userRepository.findById(i).orElseThrow(()->new UserNotFoundException("Invalid User Id, User doesn't exist!!! "+i));
+				listOfUser.add(user);
+			}
+			return listOfUser;
 		}
-		return listOfUser;
+		else {
+			return listOfUser;
+		}
 	}
 	
 	@Override
-	public String removeCourseFromCatalogue(int courseId) {
+	public String removeCourseFromCatalogue(int courseId) throws HttpClientErrorException{
 		String uri="http://localhost:9002/course/removecourse/"+courseId;
 		String responseMsg=restTemplate.getForObject(uri, String.class);
 		return responseMsg;

@@ -20,9 +20,11 @@ public class User {
 	@NotNull(message = "user name must not be null")
 	@Column(name = "User_Name")
 	private String userName;
-	
+	@NotNull(message = "password must not be null")
 	private String password;	
+	@NotNull(message = "first name must not be null")
 	private String firstName;
+	@NotNull(message = "last name must not be null")
 	private String lastName;
 	private boolean isActive;
 	@ElementCollection

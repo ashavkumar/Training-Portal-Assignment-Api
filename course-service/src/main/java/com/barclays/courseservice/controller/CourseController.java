@@ -41,9 +41,9 @@ public class CourseController {
 	}
 	
 	@RequestMapping(value="/removecourse/{courseId}",method=RequestMethod.GET)
-	public String removeCourse(@PathVariable("courseId") int courseId){
-		courseService.removeCourse(courseId);
-		return "The course has been removed from catalogue successfully!!!";
+	public String removeCourse(@PathVariable("courseId") int courseId) throws CourseNotFoundException{
+		String responseMsg=courseService.removeCourse(courseId);
+		return responseMsg;
 	}
 	
 }

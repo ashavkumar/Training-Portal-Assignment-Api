@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
 
 import com.barclays.userservice.exception.UserNotFoundException;
 import com.barclays.userservice.exception.UserRequestNotFoundException;
@@ -61,7 +62,7 @@ public class UserController {
 	}
 	
 	@RequestMapping(value="/actionforpasswordreset/{userRequestId}", method = RequestMethod.GET)
-	public ResponseEntity<String> approvalForPasswordReset(@PathVariable("userRequestId") int userRequestId){
+	public ResponseEntity<String> approvalForPasswordReset(@PathVariable("userRequestId") int userRequestId) throws UserRequestNotFoundException{
 		String responseMsg=userService.approvalForPasswordReset(userRequestId);
 		return new ResponseEntity<String>(responseMsg,HttpStatus.OK);
 	}
@@ -78,9 +79,15 @@ public class UserController {
 		return new ResponseEntity<UserResponse<User>>(userResponse,HttpStatus.OK);	
 	}
 	
-	@RequestMapping(value="/actionformakedisableorenable/{userId}",method=RequestMethod.GET)
-	public ResponseEntity<UserResponse<User>> makeDisableOrEnableUser(@PathVariable("userId") int userId) throws UserNotFoundException{
-		UserResponse<User> userResponse=userService.makeDisableOrEnableUser(userId);
+	@RequestMapping(value="/actionformakedisable/{userId}",method=RequestMethod.GET)
+	public ResponseEntity<UserResponse<User>> makeUserDisable(@PathVariable("userId") int userId) throws UserNotFoundException{
+		UserResponse<User> userResponse=userService.makeUserDisable(userId);
+		return new ResponseEntity<UserResponse<User>>(userResponse,HttpStatus.OK);
+	}
+	
+	@RequestMapping(value="/actionformakeenable/{userId}",method=RequestMethod.GET)
+	public ResponseEntity<UserResponse<User>> makeUserEnable(@PathVariable("userId") int userId) throws UserNotFoundException{
+		UserResponse<User> userResponse=userService.makeUserEnable(userId);
 		return new ResponseEntity<UserResponse<User>>(userResponse,HttpStatus.OK);
 	}
 	
@@ -99,26 +106,26 @@ public class UserController {
 		return new ResponseEntity<List<User>>(users, HttpStatus.OK);
 	}
 	
-	@RequestMapping(value="/delete/{userId}",method = RequestMethod.DELETE)
-	public ResponseEntity<String> deleteUser(@PathVariable("userId") int uId){
-		userService.deleteUser(uId);
-		return new ResponseEntity<String>("Successfully deleted!!!",HttpStatus.OK);
+	@RequestMapping(value="/removeuser/{userId}",method = RequestMethod.GET)
+	public ResponseEntity<String> removeUser(@PathVariable("userId") int userId) throws UserNotFoundException{
+		String responseMsg=userService.removeUser(userId);
+		return new ResponseEntity<String>(responseMsg,HttpStatus.OK);
 	}
 	
 	@RequestMapping(value="/subscribedcourse",method=RequestMethod.POST)
-	public ResponseEntity<UserResponse<Course>> subscribedCourse(@RequestBody CourseRequest courseRequest){
+	public ResponseEntity<UserResponse<Course>> subscribedCourse(@RequestBody CourseRequest courseRequest) throws HttpClientErrorException, UserNotFoundException {
 		UserResponse<Course> userResponse=userService.purchaseCourse(courseRequest);
 		return new ResponseEntity<UserResponse<Course>>(userResponse, HttpStatus.OK);
 	}
 	
 	@RequestMapping(value="/userwisesubscription/{userId}",method=RequestMethod.GET)
-	public ResponseEntity<List<Course>> userWiseSubscription(@PathVariable("userId") int userId){
+	public ResponseEntity<List<Course>> userWiseSubscription(@PathVariable("userId") int userId) throws UserNotFoundException{
 		List<Course> listOfCourse=userService.userWiseSubscription(userId);
 		return new ResponseEntity<List<Course>>(listOfCourse,HttpStatus.OK);
 	}
 	
 	@RequestMapping(value="/coursewisesubscription/{courseId}",method=RequestMethod.GET)
-	public ResponseEntity<List<User>> courseWiseSubscription(@PathVariable("courseId") int courseId){
+	public ResponseEntity<List<User>> courseWiseSubscription(@PathVariable("courseId") int courseId) throws HttpClientErrorException, UserNotFoundException{
 		List<User> listOfUser=userService.courseWiseSubscription(courseId);
 		return new ResponseEntity<List<User>>(listOfUser,HttpStatus.OK);
 	}

@@ -17,14 +17,12 @@ public class CourseServiceImpl implements CourseService{
 	@Override
 	public Course registerCourse(Course course) {
 		course.setActive(true);
-		course=courseRepository.save(course);
-		return course;
+		return courseRepository.save(course);
 	}
 	
 	@Override
 	public Course getCourse(int courseId) throws CourseNotFoundException {
-		Course course=courseRepository.findById(courseId).orElseThrow(()->new CourseNotFoundException("Invalid course id "+courseId));
-		return course;			
+		return courseRepository.findById(courseId).orElseThrow(()->new CourseNotFoundException("Invalid courseId,Course doesn't exist!!! "+courseId));			
 	}
 
 	@Override
@@ -33,24 +31,14 @@ public class CourseServiceImpl implements CourseService{
 	}
 	
 	@Override
-	public void removeCourse(int courseId) {
-		Course course=courseRepository.findById(courseId).get();
-		course.setActive(false);
-		course=courseRepository.save(course);
+	public String removeCourse(int courseId) throws CourseNotFoundException {
+		Course course=getCourse(courseId);
+		if(course.isActive()==true) {
+			course.setActive(false);
+			course=courseRepository.save(course);
+			return "The course removed from catalogue successfully!!!";
+		}
+		return "This course has already removed!!!";
 	}
 	
-	
-	@Override
-	public void updateCourse(int courseId,Course course) throws CourseNotFoundException {
-		Course retrieveCourse=courseRepository.findById(courseId).orElseThrow(()->new CourseNotFoundException("Invalid Course Id "+courseId));
-		if(course.getCourseName()!=null)
-			retrieveCourse.setCourseName(course.getCourseName());
-		if(course.getCourseType()!=null)
-			retrieveCourse.setCourseType(course.getCourseType());
-		if(course.getCourseDiscription()!=null)
-			retrieveCourse.setCourseDiscription(course.getCourseDiscription());
-		retrieveCourse.setActive(true);
-		retrieveCourse.setCourseCost(course.getCourseCost());
-		courseRepository.save(retrieveCourse);
-	}
 }

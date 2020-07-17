@@ -3,6 +3,7 @@ package com.barclays.userservice.response;
 public class CustomResponse {
 	private int code;
 	private String message;
+	
 	public CustomResponse() {
 		super();
 	}
@@ -23,4 +24,5 @@ public class CustomResponse {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+	
 }
