@@ -21,6 +21,7 @@ import com.barclays.userservice.model.CourseRequest;
 import com.barclays.userservice.model.User;
 import com.barclays.userservice.model.UserCourse;
 import com.barclays.userservice.model.UserRequest;
+import com.barclays.userservice.request.PasswordResetRequest;
 import com.barclays.userservice.response.UserResponse;
 import com.barclays.userservice.service.UserService;
 
@@ -40,7 +41,7 @@ public class UserServiceImpl implements UserService{
 	
 	@Override
 	public UserRequest registerUser(UserRequest userRequest) {
-		userRequest.setStatus("APPLIED");
+		userRequest.setStatus("APPLIED-New User Request.");
 		return userRequestRepository.save(userRequest);
 	}
 	@Override
@@ -94,9 +95,31 @@ public class UserServiceImpl implements UserService{
 	}
 	
 	@Override
-	public void resetPassword(UserRequest userRequest) {
-		userRequest.setStatus("APPLIED");
-		userRequestRepository.save(userRequest);
+	public UserResponse<PasswordResetRequest> resetPassword(PasswordResetRequest passwordResetRequest) {
+		if(passwordResetRequest.getUsername()!=null && passwordResetRequest.getOldPassword()!=null 
+				&& passwordResetRequest.getNewPassword()!=null && passwordResetRequest.getSecurityQuestion()!=null
+				&& passwordResetRequest.getSecurityAnswer()!=null) {
+			User user=userRepository.findByUserName(passwordResetRequest.getUsername());
+			if(user.getPassword().equals(passwordResetRequest.getOldPassword())==true) {
+				if(passwordResetRequest.getOldPassword().equals(passwordResetRequest.getNewPassword())==false) {
+					UserRequest userRequest=new UserRequest();
+					userRequest.setUsername(passwordResetRequest.getUsername());
+					userRequest.setPassword(passwordResetRequest.getNewPassword());
+					userRequest.setStatus("APPLIED-Password Reset");
+					userRequest=userRequestRepository.save(userRequest);
+					return new UserResponse<PasswordResetRequest>("Request for  reset password has raised successfully!!! Request Id: "+userRequest.getId(),passwordResetRequest);
+				}
+				else {
+					return new UserResponse<PasswordResetRequest>("New password must be different from old password, Try again!!!",passwordResetRequest);
+				}
+			}
+			else {
+				return new UserResponse<PasswordResetRequest>("Incorrect password, Try again!!!",passwordResetRequest);
+			}
+		}
+		else {
+			return new UserResponse<PasswordResetRequest>("Incomplete details given, Try again!!!",passwordResetRequest);
+		}		
 	}
 	
 	@Override

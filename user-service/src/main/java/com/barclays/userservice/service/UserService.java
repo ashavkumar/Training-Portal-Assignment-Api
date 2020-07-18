@@ -10,6 +10,7 @@ import com.barclays.userservice.model.Course;
 import com.barclays.userservice.model.CourseRequest;
 import com.barclays.userservice.model.User;
 import com.barclays.userservice.model.UserRequest;
+import com.barclays.userservice.request.PasswordResetRequest;
 import com.barclays.userservice.response.UserResponse;
 
 public interface UserService {
@@ -18,7 +19,7 @@ public interface UserService {
 	public List<UserRequest> getAllRegisterRequests();
 	public UserResponse<UserRequest> approvalForUser(int userRequestId) throws UserRequestNotFoundException;
 	
-	public void resetPassword(UserRequest userRequest);
+	public UserResponse<PasswordResetRequest> resetPassword(PasswordResetRequest passwordResetRequest);
 	public String approvalForPasswordReset(int userRequestId) throws UserRequestNotFoundException;
 	
 	public void updateUserProfile(UserRequest userRequest) throws UserNotFoundException;

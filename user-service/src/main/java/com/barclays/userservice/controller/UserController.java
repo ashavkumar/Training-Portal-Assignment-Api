@@ -20,6 +20,7 @@ import com.barclays.userservice.model.Course;
 import com.barclays.userservice.model.CourseRequest;
 import com.barclays.userservice.model.User;
 import com.barclays.userservice.model.UserRequest;
+import com.barclays.userservice.request.PasswordResetRequest;
 import com.barclays.userservice.response.UserResponse;
 import com.barclays.userservice.service.UserService;
 
@@ -56,9 +57,9 @@ public class UserController {
 	}
 	
 	@RequestMapping(value="/reset/password",method=RequestMethod.POST)
-	public ResponseEntity<String> resetPassword(@RequestBody UserRequest userRequest){
-		userService.resetPassword(userRequest);
-		return new ResponseEntity<String>("Your request to reset password has been raised successfully",HttpStatus.OK);
+	public ResponseEntity<UserResponse<PasswordResetRequest>> resetPassword(@RequestBody PasswordResetRequest passwordResetRequest){
+		UserResponse<PasswordResetRequest> response=userService.resetPassword(passwordResetRequest);
+		return new ResponseEntity<UserResponse<PasswordResetRequest>>(response,HttpStatus.OK);
 	}
 	
 	@RequestMapping(value="/actionforpasswordreset/{userRequestId}", method = RequestMethod.GET)
