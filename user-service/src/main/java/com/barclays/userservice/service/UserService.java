@@ -22,8 +22,8 @@ public interface UserService {
 	public UserResponse<PasswordResetRequest> resetPassword(PasswordResetRequest passwordResetRequest);
 	public String approvalForPasswordReset(int userRequestId) throws UserRequestNotFoundException;
 	
-	public void updateUserProfile(UserRequest userRequest) throws UserNotFoundException;
-	public UserResponse<User> approvalForUpdateUserProfile(int userRequestId);
+	public UserResponse<UserRequest> updateUserProfile(UserRequest userRequest) throws UserNotFoundException;
+	public UserResponse<User> approvalForUpdateUserProfile(int userRequestId) throws UserRequestNotFoundException;
 	
 	public UserResponse<User> makeUserDisable(int userId) throws UserNotFoundException;
 	public UserResponse<User> makeUserEnable(int userId) throws UserNotFoundException;

@@ -69,13 +69,13 @@ public class UserController {
 	}
 	
 	@RequestMapping(value="/updateprofile",method=RequestMethod.POST)
-	public ResponseEntity<String> updateUserProfile(@RequestBody UserRequest userRequest) throws UserNotFoundException{
-		userService.updateUserProfile(userRequest);
-		return new ResponseEntity<String>("Your request for updating profile has been raised successfully",HttpStatus.OK);	
+	public ResponseEntity<UserResponse<UserRequest>> updateUserProfile(@RequestBody UserRequest userRequest) throws UserNotFoundException{
+		UserResponse<UserRequest> userResponse=userService.updateUserProfile(userRequest);
+		return new ResponseEntity<UserResponse<UserRequest>>(userResponse,HttpStatus.OK);	
 	}
 	
-	@RequestMapping(value="/updateapprovalforprofile/{userRequestId}",method=RequestMethod.PUT)
-	public ResponseEntity<UserResponse<User>> approvalForUpdateUserProfile(@PathVariable("userRequestId") int userRequestId) throws UserNotFoundException{
+	@RequestMapping(value="/updateapprovalforprofile/{userRequestId}",method=RequestMethod.GET)
+	public ResponseEntity<UserResponse<User>> approvalForUpdateUserProfile(@PathVariable("userRequestId") int userRequestId) throws UserNotFoundException, UserRequestNotFoundException{
 		UserResponse<User> userResponse=userService.approvalForUpdateUserProfile(userRequestId);
 		return new ResponseEntity<UserResponse<User>>(userResponse,HttpStatus.OK);	
 	}

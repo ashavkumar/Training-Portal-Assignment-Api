@@ -152,21 +152,45 @@ public class UserServiceImpl implements UserService{
 	}
 	
 	@Override
-	public void updateUserProfile(UserRequest userRequest) throws UserNotFoundException {
-		userRequest.setStatus("APPLIED");
-		userRequestRepository.save(userRequest);
+	public UserResponse<UserRequest> updateUserProfile(UserRequest userRequest) throws UserNotFoundException {
+	
+		User user=userRepository.findByUserName(userRequest.getUsername());
+		Optional<User > checkNull=Optional.ofNullable(user);
+		if(checkNull.isPresent()) {
+			if(userRequest.getFirstname()!=null && userRequest.getLastname()!=null) {
+				userRequest.setStatus("APPLIED-Update Profile");
+				userRequest=userRequestRepository.save(userRequest);
+				return new UserResponse<UserRequest>("Request to update profile has raised successfully!!!, Request Id: "+userRequest.getId(),userRequest);
+			}
+			else {
+				return new UserResponse<UserRequest>("Incomplete details given, Try again!!!",userRequest);
+			}
+		}
+		else {
+			return new UserResponse<UserRequest>("Invalid username, Try again!!!",userRequest);
+		}
 	}
 	
 	@Override
-	public UserResponse<User> approvalForUpdateUserProfile(int userRequestId) {
-		UserRequest userRequest=userRequestRepository.findById(userRequestId).get();
-		User user=userRepository.findByUserName(userRequest.getUsername());
-		if(userRequest.getFirstname()!=null)
-			user.setFirstName(userRequest.getFirstname());
-		if(userRequest.getLastname()!=null)
-			user.setLastName(userRequest.getLastname());
-		user=userRepository.save(user);
-		return new UserResponse<>("Profile has been updated successfully!!!",user);
+	public UserResponse<User> approvalForUpdateUserProfile(int userRequestId) throws UserRequestNotFoundException {
+		UserRequest userRequest=userRequestRepository.findById(userRequestId).orElseThrow(()->new UserRequestNotFoundException("No Request has raised yet!!! Inappropriate action "+userRequestId));
+		if(userRequest.getStatus().startsWith("APPLIED")) {
+			User user=userRepository.findByUserName(userRequest.getUsername());
+			
+			if(userRequest.getFirstname()!=null)
+				user.setFirstName(userRequest.getFirstname());
+			if(userRequest.getLastname()!=null)
+				user.setLastName(userRequest.getLastname());
+			user=userRepository.save(user);
+			
+			userRequest.setStatus("Approved for update user profile.");
+			userRequestRepository.save(userRequest);
+			
+			return new UserResponse<>("Profile has been updated successfully!!!",user);
+		}
+		else {
+			return new UserResponse<>("Request has been declined or approved, Invalid Request!!!",null);
+		}
 	}
 	
 	@Override
