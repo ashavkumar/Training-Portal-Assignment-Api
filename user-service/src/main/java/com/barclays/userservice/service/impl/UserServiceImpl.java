@@ -1,5 +1,6 @@
 package com.barclays.userservice.service.impl;
 
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +17,7 @@ import com.barclays.userservice.dao.UserRepository;
 import com.barclays.userservice.dao.UserRequestRepository;
 import com.barclays.userservice.exception.UserNotFoundException;
 import com.barclays.userservice.exception.UserRequestNotFoundException;
+import com.barclays.userservice.mail.UserMailService;
 import com.barclays.userservice.model.Course;
 import com.barclays.userservice.model.CourseRequest;
 import com.barclays.userservice.model.User;
@@ -38,11 +40,27 @@ public class UserServiceImpl implements UserService{
 	private CourseRequestRepository courseRequestRepository;
 	@Autowired
 	private RestTemplate restTemplate;
+	@Autowired
+	private UserMailService userMailService;
 	
 	@Override
 	public UserRequest registerUser(UserRequest userRequest) {
 		userRequest.setStatus("APPLIED-New User Request.");
-		return userRequestRepository.save(userRequest);
+		userRequest=userRequestRepository.save(userRequest);
+		
+		String toMailId=userRequest.getMailId();
+		String subject="Action Required: Registration Request Raised.";
+		String mailContent="Dear "+userRequest.getFirstname()+",\r\n" + 
+				"\r\n" + 
+				"Hope you are doing well! Your request to register on CourseSite.com has \r\n" + 
+				"been raised successfully. So your request id is "+userRequest.getId()+". You will \r\n" + 
+				"be notified by whatever action will be taken by our admin team.\r\n" + 
+				"\r\n" + 
+				"Thanks\r\n" + 
+				"Admin\r\n" + 
+				"CourseSite.com";
+		userMailService.sendMail(toMailId,subject,mailContent);
+		return userRequest;
 	}
 	@Override
 	public List<UserRequest> getAllRegisterRequests(){

@@ -5,6 +5,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 @Entity
 public class UserRequest {
@@ -18,6 +19,8 @@ public class UserRequest {
 	private String password;
 	private String firstname;
 	private String lastname;
+	@Pattern(regexp="^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$")
+	private String mailId;
 	private String status;
 	private String role;
 	
@@ -26,13 +29,14 @@ public class UserRequest {
 	}
 
 	public UserRequest(int id, @NotNull(message = "Username must not be null") String username, String password,
-			String firstname, String lastname, String status,String role) {
+			String firstname, String lastname,String mailId, String status,String role) {
 		super();
 		this.id = id;
 		this.username = username;
 		this.password = password;
 		this.firstname = firstname;
 		this.lastname = lastname;
+		this.mailId=mailId;
 		this.status = status;
 		this.role=role;
 	}
@@ -77,6 +81,14 @@ public class UserRequest {
 		this.lastname = lastname;
 	}
 
+	public String getMailId() {
+		return mailId;
+	}
+
+	public void setMailId(String mailId) {
+		this.mailId = mailId;
+	}
+
 	public String getStatus() {
 		return status;
 	}
@@ -92,4 +104,12 @@ public class UserRequest {
 	public void setRole(String role) {
 		this.role = role;
 	}
+
+	@Override
+	public String toString() {
+		return "UserRequest [id=" + id + ", username=" + username + ", password=" + password + ", firstname="
+				+ firstname + ", lastname=" + lastname + ", mailId=" + mailId + ", status=" + status + ", role=" + role
+				+ "]";
+	}
+	
 }

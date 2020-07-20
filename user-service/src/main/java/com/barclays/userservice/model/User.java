@@ -10,6 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 @Entity
 public class User {
@@ -26,6 +27,12 @@ public class User {
 	private String firstName;
 	@NotNull(message = "last name must not be null")
 	private String lastName;
+	@NotNull(message = "Email must not be null")         
+	// ([a-zA-Z0-9_\\-\\.]+)
+	// ([a-zA-Z0-9_\\-\\.]+)
+	// ([a-zA-Z]{2,5})$")
+	@Pattern(regexp="^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$")
+	private String mailId;
 	private boolean isActive;
 	@ElementCollection
 	private Set<Integer> courses= new LinkedHashSet<Integer>();
@@ -37,13 +44,14 @@ public class User {
 	}
 
 	public User(int userId, @NotNull(message = "user name must not be null") String userName, String password,
-			String firstName, String lastName, boolean isActive, Set<Integer> courses, String role) {
+			String firstName, String lastName,String mailId, boolean isActive, Set<Integer> courses, String role) {
 		super();
 		this.userId = userId;
 		this.userName = userName;
 		this.password = password;
 		this.firstName = firstName;
 		this.lastName = lastName;
+		this.mailId=mailId;
 		this.isActive = isActive;
 		this.courses = courses;
 		this.role = role;
@@ -87,6 +95,14 @@ public class User {
 
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
+	}
+
+	public String getMailId() {
+		return mailId;
+	}
+
+	public void setMailId(String mailId) {
+		this.mailId = mailId;
 	}
 
 	public boolean isActive() {
