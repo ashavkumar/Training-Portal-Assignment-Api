@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import com.barclays.userservice.cloud.UserFeignClient;
 import com.barclays.userservice.dao.CourseRequestRepository;
 import com.barclays.userservice.dao.UserCourseRepository;
 import com.barclays.userservice.dao.UserRepository;
@@ -38,11 +39,13 @@ public class UserServiceImpl implements UserService{
 	private UserCourseRepository userCourseRepository;
 	@Autowired
 	private CourseRequestRepository courseRequestRepository;
-	@Autowired
-	private RestTemplate restTemplate;
+	/*
+	 * @Autowired private RestTemplate restTemplate;
+	 */
 	@Autowired
 	private UserMailService userMailService;
-	
+	@Autowired
+	private UserFeignClient userFeignClient;
 	@Override
 	public UserRequest registerUser(UserRequest userRequest) {
 		userRequest.setStatus("APPLIED-New User Request.");
@@ -405,8 +408,11 @@ public class UserServiceImpl implements UserService{
 		Course course=null;
 		User user=userRepository.findById(courseRequest.getUserId()).orElseThrow(()->new UserNotFoundException("Invalid UserId, User doesn't exist!!! "+courseRequest.getUserId()));
 		
-		String uri="http://localhost:9002/course/get/"+courseRequest.getCourseId();
-		course=restTemplate.getForObject(uri,Course.class);
+		/*
+		 * String uri="http://localhost:9002/course/get/"+courseRequest.getCourseId();
+		 * course=restTemplate.getForObject(uri,Course.class);
+		 */
+		course=userFeignClient.getCourse(courseRequest.getCourseId());
 		
 		Set<Integer> set=user.getCourses();
 		if(course.isActive()==false) {
@@ -460,8 +466,11 @@ public class UserServiceImpl implements UserService{
 		  
 		  if(checkNull.isPresent()) { 
 			  for(int i:listOfCourseId) {
-				  String uri="http://localhost:9002/course/get/"+i;
-				  Course course=restTemplate.getForObject(uri,Course.class);
+				/*
+				 * String uri="http://localhost:9002/course/get/"+i; Course
+				 * course=restTemplate.getForObject(uri,Course.class);
+				 */
+				  Course course=userFeignClient.getCourse(i);
 				  listOfCourse.add(course); 
 				 }
 			  return listOfCourse;
@@ -474,8 +483,12 @@ public class UserServiceImpl implements UserService{
 	@Override
 	public List<User> courseWiseSubscription(int courseId) throws HttpClientErrorException , UserNotFoundException{
 		
-		String uri="http://localhost:9002/course/get/"+courseId;
-		restTemplate.getForObject(uri, Course.class);
+		/*
+		 * String uri="http://localhost:9002/course/get/"+courseId;
+		 * restTemplate.getForObject(uri, Course.class);
+		 */
+		
+		userFeignClient.getCourse(courseId);
 		
 		List<User> listOfUser=new ArrayList<>();
 		List<Integer> listOfUserId=userCourseRepository.courseWiseSubscription(courseId);
@@ -494,8 +507,11 @@ public class UserServiceImpl implements UserService{
 	
 	@Override
 	public String removeCourseFromCatalogue(int courseId) throws HttpClientErrorException{
-		String uri="http://localhost:9002/course/removecourse/"+courseId;
-		String responseMsg=restTemplate.getForObject(uri, String.class);
+		/*
+		 * String uri="http://localhost:9002/course/removecourse/"+courseId; String
+		 * responseMsg=restTemplate.getForObject(uri, String.class);
+		 */
+		String responseMsg=userFeignClient.removeCourse(courseId);
 		return responseMsg;
 	}
 
