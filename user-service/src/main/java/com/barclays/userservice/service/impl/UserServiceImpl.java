@@ -73,19 +73,61 @@ public class UserServiceImpl implements UserService{
 		Optional<UserRequest> checkNull =  Optional.ofNullable(userRequest);
 		if(checkNull.isPresent()) {
 			if(userRequest.getStatus().startsWith("APPLIED")) {
-				if(userRequest.getUsername()==null || userRequest.getPassword()==null || userRequest.getFirstname()==null || userRequest.getLastname()==null) {
+				if(userRequest.getUsername()==null || userRequest.getPassword()==null || userRequest.getFirstname()==null || userRequest.getLastname()==null || userRequest.getMailId()==null) {
 					userRequest.setStatus("REJECTED-Incomplete details given.");
 					userRequest=userRequestRepository.save(userRequest);
+					
+					String toMailId=userRequest.getMailId();
+					String subject="Action Taken: Registration Request Rejected.";
+					String mailContent="Dear "+userRequest.getFirstname()+",\r\n" + 
+							"\r\n" + 
+							"Hope you are doing well! Your request to register on CourseSite.com has \r\n" + 
+							"been declined. Becuase you didn't provide us all the mandatory details So we closed your request "+userRequest.getId()+". Next \r\n" + 
+							"time you can try with all the details. All the best!!\r\n" + 
+							"\r\n" + 
+							"Thanks\r\n" + 
+							"Admin\r\n" + 
+							"CourseSite.com";
+					userMailService.sendMail(toMailId,subject,mailContent);
+					
 					return new UserResponse<>("Please fill all the details & Try again!!!",userRequest);
 				}
 				else if(userRequest.getUsername().length()<5) {
 					userRequest.setStatus("REJECTED-Username length was less than 5");
 					userRequest=userRequestRepository.save(userRequest);
+					
+					String toMailId=userRequest.getMailId();
+					String subject="Action Taken: Registration Request Rejected.";
+					String mailContent="Dear "+userRequest.getFirstname()+",\r\n" + 
+							"\r\n" + 
+							"Hope you are doing well! Your request to register on CourseSite.com has \r\n" + 
+							"been declined. Becuase your details that you provide us, are not following our resrictions So we closed your request "+userRequest.getId()+". Next \r\n" + 
+							"time you can try with all the proper details. All the best!!\r\n" + 
+							"\r\n" + 
+							"Thanks\r\n" + 
+							"Admin\r\n" + 
+							"CourseSite.com";
+					userMailService.sendMail(toMailId,subject,mailContent);
+					
 					return new UserResponse<>("Please insert username of atleast 5 length!!!",userRequest);
 				}
 				else if( userRequest.getPassword().matches("[A-Z][a-z]{3,}[0-9]{1,}[!@#$%&*]")==false) {
 					userRequest.setStatus("REJECTED-Password was not following standards");
 					userRequest=userRequestRepository.save(userRequest);
+					
+					String toMailId=userRequest.getMailId();
+					String subject="Action Taken: Registration Request Rejected.";
+					String mailContent="Dear "+userRequest.getFirstname()+",\r\n" + 
+							"\r\n" + 
+							"Hope you are doing well! Your request to register on CourseSite.com has \r\n" + 
+							"been declined. Becuase your details that you provide us, are not following our resrictions So we closed your request "+userRequest.getId()+". Next \r\n" + 
+							"time you can try with all the proper details. All the best!!\r\n" + 
+							"\r\n" + 
+							"Thanks\r\n" + 
+							"Admin\r\n" + 
+							"CourseSite.com";
+					userMailService.sendMail(toMailId,subject,mailContent);
+					
 					return new UserResponse<>("Passwaord should be consists of 1 uppercase,1 digit & 1 special character!!!",userRequest);
 				}
 				else {
@@ -100,6 +142,21 @@ public class UserServiceImpl implements UserService{
 					
 					userRequest.setStatus("APPROVED-Every thing was appropriate.");
 					userRequest=userRequestRepository.save(userRequest);
+					
+					String toMailId=userRequest.getMailId();
+					String subject="Action Taken: Registration done.";
+					String mailContent="Dear "+userRequest.getFirstname()+",\r\n" + 
+							"\r\n" + 
+							"Hope you are doing well! Your request to register on CourseSite.com has \r\n" + 
+							"been accepted. Now you are our registered user & you can purchase our courses \r\n"+
+							"So we are going to close your request "+userRequest.getId()+".Now \r\n" + 
+							"subscribed our best courses. All the best!!\r\n" + 
+							"\r\n" + 
+							"Thanks\r\n" + 
+							"Admin\r\n" + 
+							"CourseSite.com";
+					userMailService.sendMail(toMailId,subject,mailContent);
+					
 					return new UserResponse<UserRequest>("Registered Successfully",userRequest);
 				}
 			}
@@ -125,6 +182,20 @@ public class UserServiceImpl implements UserService{
 					userRequest.setPassword(passwordResetRequest.getNewPassword());
 					userRequest.setStatus("APPLIED-Password Reset");
 					userRequest=userRequestRepository.save(userRequest);
+					
+					String toMailId=user.getMailId();
+					String subject="Action Required: Password Reset Request.";
+					String mailContent="Dear "+user.getFirstName()+",\r\n" + 
+							"\r\n" + 
+							"Hope you are doing well! Your request to reset password on CourseSite.com has \r\n" + 
+							"been raised successfully. So your request id is "+userRequest.getId()+". You will \\r\\n" + 
+							"be notified by whatever action will be taken on your request by our admin team.\\r\\n" + 
+							"\r\n" + 
+							"Thanks\r\n" + 
+							"Admin\r\n" + 
+							"CourseSite.com";
+					userMailService.sendMail(toMailId,subject,mailContent);
+					
 					return new UserResponse<PasswordResetRequest>("Request for  reset password has raised successfully!!! Request Id: "+userRequest.getId(),passwordResetRequest);
 				}
 				else {
@@ -147,16 +218,47 @@ public class UserServiceImpl implements UserService{
 		if(checkNull.isPresent()) {
 			if(userRequest.getStatus().startsWith("APPLIED")) {
 				if(userRequest.getPassword().matches("[A-Z][a-z]{3,}[0-9]{1,}[!@#$%&*]")) {
+					
 					User user=userRepository.findByUserName(userRequest.getUsername());
 					user.setPassword(userRequest.getPassword());
 					userRepository.save(user);
+					
 					userRequest.setStatus("Approved for the password reset request");
-					userRequestRepository.save(userRequest);
+					userRequest=userRequestRepository.save(userRequest);
+					
+					String toMailId=userRequest.getMailId();
+					String subject="Action Taken: Password reset done.";
+					String mailContent="Dear "+user.getFirstName()+",\r\n" + 
+							"\r\n" + 
+							"Hope you are doing well! Your request to reset password has \r\n" + 
+							"been accepted. Your password has been changed successfully So we are going to close your request "+userRequest.getId()+". All \r\n" + 
+							"the best!! Please subscribe the course.\r\n" + 
+							"\r\n" + 
+							"Thanks\r\n" + 
+							"Admin\r\n" + 
+							"CourseSite.com";
+					userMailService.sendMail(toMailId,subject,mailContent);
+					
 					return "Password has been reset successfully";
 				}
 				else {
 					userRequest.setStatus("REJECTED-Password was not following given standards.");
 					userRequestRepository.save(userRequest);
+					
+					String toMailId=userRequest.getMailId();
+					String subject="Action Taken: Password reset declined.";
+					String mailContent="Dear User,\r\n" + 
+							"\r\n" + 
+							"Hope you are doing well! Your request to reset password has \r\n" + 
+							"been declined. Because your new password isn't following standards or \r\n"+
+							"given pattern. So we are going to close your request "+userRequest.getId()+". Again \r\n" + 
+							"you can try. All the best!!\r\n" + 
+							"\r\n" + 
+							"Thanks\r\n" + 
+							"Admin\r\n" + 
+							"CourseSite.com";
+					userMailService.sendMail(toMailId,subject,mailContent);
+					
 					return "Please make sure that passsword is of correct pattern!!!";
 				}
 			}
@@ -202,7 +304,21 @@ public class UserServiceImpl implements UserService{
 			user=userRepository.save(user);
 			
 			userRequest.setStatus("Approved for update user profile.");
-			userRequestRepository.save(userRequest);
+			userRequest=userRequestRepository.save(userRequest);
+			
+			String toMailId=user.getMailId();
+			String subject="Action Taken: Update profile done.";
+			String mailContent="Dear "+user.getFirstName()+",\r\n" + 
+					"\r\n" + 
+					"Hope you are doing well! Your request to update profile has \r\n" + 
+					"been accepted. Now your has been updated & you can check that. So \r\n"+
+					"we are going to close your request "+userRequest.getId()+". \r\n" + 
+					"All the best, Please subscribe the course.\r\n" + 
+					"\r\n" + 
+					"Thanks\r\n" + 
+					"Admin\r\n" + 
+					"CourseSite.com";
+			userMailService.sendMail(toMailId,subject,mailContent);
 			
 			return new UserResponse<>("Profile has been updated successfully!!!",user);
 		}
@@ -218,6 +334,20 @@ public class UserServiceImpl implements UserService{
 		if(user.isActive()==true) {
 			user.setActive(false);
 			user=userRepository.save(user);
+			
+			String toMailId=user.getMailId();
+			String subject="Action Taken: Profile deactivated.";
+			String mailContent="Dear "+user.getFirstName()+",\r\n" + 
+					"\r\n" + 
+					"Hope you are doing well! Regret to inform you that\r\n" + 
+					"we are going to deactivate your profile. Now you will not be able to access your subscribed courses.\r\n"+ 
+					"If you want to activate your profile Please contact Admin team.\r\n" + 
+					"\r\n" + 
+					"Thanks\r\n" + 
+					"Admin\r\n" + 
+					"CourseSite.com";
+			userMailService.sendMail(toMailId,subject,mailContent);
+			
 			return new UserResponse<>("User has been disabled successfully!!!",user);
 		}
 		return new UserResponse<>("This user already disabled!!!",user);
@@ -230,6 +360,20 @@ public class UserServiceImpl implements UserService{
 		if(user.isActive()==false) {
 			user.setActive(true);
 			user=userRepository.save(user);
+			
+			String toMailId=user.getMailId();
+			String subject="Action Taken: Profile Activated.";
+			String mailContent="Dear "+user.getFirstName()+",\r\n" + 
+					"\r\n" + 
+					"Hope you are doing well! Pleased to inform you that\r\n" + 
+					"we are going to activate your profile. Now you will be able to access your subscribed courses.\r\n"+ 
+					"Now enjoy your subscribed courses. All the best!!!\r\n" + 
+					"\r\n" + 
+					"Thanks\r\n" + 
+					"Admin\r\n" + 
+					"CourseSite.com";
+			userMailService.sendMail(toMailId,subject,mailContent);
+			
 			return new UserResponse<>("User has been enabled successfully!!!",user);
 		}
 		return new UserResponse<>("This user already enabled!!!",user);
@@ -272,7 +416,7 @@ public class UserServiceImpl implements UserService{
 		}
 		else if(set.add(courseRequest.getCourseId())==true) {
 			user.setCourse(set);
-			userRepository.save(user);
+			user=userRepository.save(user);
 			
 			courseRequest.setStatus("Approved");
 			courseRequestRepository.save(courseRequest);
@@ -282,6 +426,19 @@ public class UserServiceImpl implements UserService{
 			userCourse.setCourseName(courseRequest.getCourseName());
 			userCourse.setUserId(courseRequest.getUserId());
 			userCourseRepository.save(userCourse);
+	
+			String toMailId=user.getMailId();
+			String subject="Course Purchased.";
+			String mailContent="Dear "+user.getFirstName()+",\r\n" + 
+					"\r\n" + 
+					"Congratulation!! You purchased "+course.getCourseName()+" successfully.\r\n" + 
+					"So this course has been added in your stack successfully.we hope you are going to enjoy this course. \r\n"+ 
+					"All the best!! Connect with our Admin team for further queries.\r\n" + 
+					"\r\n" + 
+					"Thanks\r\n" + 
+					"Admin\r\n" + 
+					"CourseSite.com";
+			userMailService.sendMail(toMailId,subject,mailContent);
 			
 			return new UserResponse<>("You purchased this course successfully!!!",course);
 		} else {
