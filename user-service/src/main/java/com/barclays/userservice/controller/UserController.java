@@ -1,5 +1,6 @@
 package com.barclays.userservice.controller;
 
+import java.net.URISyntaxException;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -114,26 +115,38 @@ public class UserController {
 	}
 	
 	@RequestMapping(value="/subscribedcourse",method=RequestMethod.POST)
-	public ResponseEntity<UserResponse<Course>> subscribedCourse(@RequestBody CourseRequest courseRequest) throws HttpClientErrorException, UserNotFoundException {
+	public ResponseEntity<UserResponse<Course>> subscribedCourse(@RequestBody CourseRequest courseRequest) throws HttpClientErrorException, UserNotFoundException, URISyntaxException {
 		UserResponse<Course> userResponse=userService.purchaseCourse(courseRequest);
 		return new ResponseEntity<UserResponse<Course>>(userResponse, HttpStatus.OK);
 	}
 	
 	@RequestMapping(value="/userwisesubscription/{userId}",method=RequestMethod.GET)
-	public ResponseEntity<List<Course>> userWiseSubscription(@PathVariable("userId") int userId) throws UserNotFoundException{
+	public ResponseEntity<List<Course>> userWiseSubscription(@PathVariable("userId") int userId) throws UserNotFoundException, HttpClientErrorException, URISyntaxException{
 		List<Course> listOfCourse=userService.userWiseSubscription(userId);
 		return new ResponseEntity<List<Course>>(listOfCourse,HttpStatus.OK);
 	}
 	
 	@RequestMapping(value="/coursewisesubscription/{courseId}",method=RequestMethod.GET)
-	public ResponseEntity<List<User>> courseWiseSubscription(@PathVariable("courseId") int courseId) throws HttpClientErrorException, UserNotFoundException{
+	public ResponseEntity<List<User>> courseWiseSubscription(@PathVariable("courseId") int courseId) throws HttpClientErrorException, UserNotFoundException, URISyntaxException{
 		List<User> listOfUser=userService.courseWiseSubscription(courseId);
 		return new ResponseEntity<List<User>>(listOfUser,HttpStatus.OK);
 	}
 	
 	@RequestMapping(value = "/removecourse/{courseId}",method=RequestMethod.GET)
-	public ResponseEntity<String> removeCourseFromCatalogue(@PathVariable("courseId") int courseId){
+	public ResponseEntity<String> removeCourseFromCatalogue(@PathVariable("courseId") int courseId) throws HttpClientErrorException, URISyntaxException{
 		String responseMsg=userService.removeCourseFromCatalogue(courseId);
 		return new ResponseEntity<String>(responseMsg,HttpStatus.OK);
+	}
+	
+	@RequestMapping(value = "/getcourse/{courseId}",method=RequestMethod.GET)
+	public ResponseEntity<Course> getCourseFromCatalogue(@PathVariable("courseId") int courseId) throws HttpClientErrorException, URISyntaxException{
+		Course course=userService.getCourseFromCatalogue(courseId);
+		return new ResponseEntity<Course>(course,HttpStatus.OK);
+	}
+	
+	@RequestMapping(value = "/getallcourses",method=RequestMethod.GET)
+	public ResponseEntity<List<Course>> getAllCourseFromCatalogue() throws HttpClientErrorException, URISyntaxException{
+		List<Course> courses=userService.getAllCourseFromCatalogue();
+		return new ResponseEntity<List<Course>>(courses,HttpStatus.OK);
 	}
 }

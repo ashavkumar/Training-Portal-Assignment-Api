@@ -2,6 +2,7 @@ package com.barclays.courseservice.service.impl;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.barclays.courseservice.dao.CourseRepository;
@@ -30,15 +31,17 @@ public class CourseServiceImpl implements CourseService{
 		return courseRepository.findAll();
 	}
 	
+	@Value("${server.port}")
+	int port;
 	@Override
 	public String removeCourse(int courseId) throws CourseNotFoundException {
 		Course course=getCourse(courseId);
 		if(course.isActive()==true) {
 			course.setActive(false);
 			course=courseRepository.save(course);
-			return "The course removed from catalogue successfully!!!";
+			return "The course removed from catalogue successfully!!! "+port;
 		}
-		return "This course has already removed!!!";
+		return "This course has already removed!!! "+port;
 	}
 	
 }

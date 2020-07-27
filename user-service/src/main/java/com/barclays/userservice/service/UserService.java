@@ -1,5 +1,6 @@
 package com.barclays.userservice.service;
 
+import java.net.URISyntaxException;
 import java.util.List;
 
 import org.springframework.web.client.HttpClientErrorException;
@@ -32,9 +33,12 @@ public interface UserService {
 	public List<User> getAllUsers();
 	public String removeUser(int userId) throws UserNotFoundException;
 	
-	public UserResponse<Course> purchaseCourse(CourseRequest courseRequest) throws HttpClientErrorException, UserNotFoundException;
-	public List<Course> userWiseSubscription(int userId) throws UserNotFoundException;
-	public List<User> courseWiseSubscription(int courseId) throws HttpClientErrorException, UserNotFoundException;
-	public String removeCourseFromCatalogue(int courseId);
+	public UserResponse<Course> purchaseCourse(CourseRequest courseRequest) throws HttpClientErrorException, UserNotFoundException, URISyntaxException;
+	public List<Course> userWiseSubscription(int userId) throws UserNotFoundException, HttpClientErrorException, URISyntaxException;
+	public List<User> courseWiseSubscription(int courseId) throws HttpClientErrorException, UserNotFoundException, URISyntaxException;
+	public String removeCourseFromCatalogue(int courseId) throws HttpClientErrorException, URISyntaxException;
+	
+	public List<Course> getAllCourseFromCatalogue();
+	public Course getCourseFromCatalogue(int courseId);
 	
 }

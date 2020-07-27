@@ -10,16 +10,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import com.barclays.userservice.model.Course;
 
 
-@FeignClient(url = "http://localhost:9002/course",name = "Course-Service")
+
+@FeignClient(name="course-service")
 public interface UserFeignClient {
 
-	@PostMapping("/register")
+	@PostMapping("/course/register")
 	public Course registerCourse(Course course);
-	@GetMapping("/get/{courseId}")
+	@GetMapping("/course/get/{courseId}")
 	public Course getCourse(@PathVariable("courseId") int cId);
-	@GetMapping("/getall")
+	@GetMapping("/course/getall")
 	public List<Course> getAllCourses();
-	@GetMapping("/removecourse/{courseId}")
+	@GetMapping("/course/removecourse/{courseId}")
 	public String removeCourse(@PathVariable("courseId") int courseId);
 	
 }

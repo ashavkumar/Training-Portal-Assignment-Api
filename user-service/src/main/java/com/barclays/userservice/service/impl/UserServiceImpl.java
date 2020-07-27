@@ -1,6 +1,7 @@
 package com.barclays.userservice.service.impl;
 
-
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -39,13 +40,15 @@ public class UserServiceImpl implements UserService{
 	private UserCourseRepository userCourseRepository;
 	@Autowired
 	private CourseRequestRepository courseRequestRepository;
-	/*
-	 * @Autowired private RestTemplate restTemplate;
-	 */
+	@Autowired 
+	private RestTemplate restTemplate;
 	@Autowired
 	private UserMailService userMailService;
-	@Autowired
-	private UserFeignClient userFeignClient;
+
+	
+	  @Autowired private UserFeignClient userFeignClient;
+	 
+	
 	@Override
 	public UserRequest registerUser(UserRequest userRequest) {
 		userRequest.setStatus("APPLIED-New User Request.");
@@ -404,15 +407,14 @@ public class UserServiceImpl implements UserService{
 	}
 	
 	@Override
-	public UserResponse<Course> purchaseCourse(CourseRequest courseRequest) throws HttpClientErrorException ,UserNotFoundException{
+	public UserResponse<Course> purchaseCourse(CourseRequest courseRequest) throws HttpClientErrorException ,UserNotFoundException, URISyntaxException{
 		Course course=null;
 		User user=userRepository.findById(courseRequest.getUserId()).orElseThrow(()->new UserNotFoundException("Invalid UserId, User doesn't exist!!! "+courseRequest.getUserId()));
 		
-		/*
-		 * String uri="http://localhost:9002/course/get/"+courseRequest.getCourseId();
-		 * course=restTemplate.getForObject(uri,Course.class);
-		 */
-		course=userFeignClient.getCourse(courseRequest.getCourseId());
+			URI uri=new URI("http://course-service/course/get/"+courseRequest.getCourseId());
+		  course=restTemplate.getForObject(uri,Course.class);
+		 
+		//course=userFeignClient.getCourse(courseRequest.getCourseId());
 		
 		Set<Integer> set=user.getCourses();
 		if(course.isActive()==false) {
@@ -455,7 +457,7 @@ public class UserServiceImpl implements UserService{
 	}
 	
 	@Override
-	public List<Course> userWiseSubscription(int userId) throws UserNotFoundException,HttpClientErrorException {
+	public List<Course> userWiseSubscription(int userId) throws UserNotFoundException,HttpClientErrorException, URISyntaxException {
 		
 		  getUser(userId);
 		  
@@ -466,11 +468,11 @@ public class UserServiceImpl implements UserService{
 		  
 		  if(checkNull.isPresent()) { 
 			  for(int i:listOfCourseId) {
-				/*
-				 * String uri="http://localhost:9002/course/get/"+i; Course
-				 * course=restTemplate.getForObject(uri,Course.class);
-				 */
-				  Course course=userFeignClient.getCourse(i);
+				  URI uri=new URI("http://course-service/course/get/"+i);
+				  Course course=restTemplate.getForObject(uri,Course.class);
+				 
+				  //Course course=userFeignClient.getCourse(i);
+				  
 				  listOfCourse.add(course); 
 				 }
 			  return listOfCourse;
@@ -481,14 +483,12 @@ public class UserServiceImpl implements UserService{
 	}
 
 	@Override
-	public List<User> courseWiseSubscription(int courseId) throws HttpClientErrorException , UserNotFoundException{
+	public List<User> courseWiseSubscription(int courseId) throws HttpClientErrorException , UserNotFoundException, URISyntaxException{
 		
-		/*
-		 * String uri="http://localhost:9002/course/get/"+courseId;
-		 * restTemplate.getForObject(uri, Course.class);
-		 */
-		
-		userFeignClient.getCourse(courseId);
+		 URI uri=new URI("http://course-service/course/get/"+courseId);
+		 restTemplate.getForObject(uri, Course.class);
+		 
+		 //userFeignClient.getCourse(courseId);
 		
 		List<User> listOfUser=new ArrayList<>();
 		List<Integer> listOfUserId=userCourseRepository.courseWiseSubscription(courseId);
@@ -506,13 +506,29 @@ public class UserServiceImpl implements UserService{
 	}
 	
 	@Override
-	public String removeCourseFromCatalogue(int courseId) throws HttpClientErrorException{
-		/*
-		 * String uri="http://localhost:9002/course/removecourse/"+courseId; String
-		 * responseMsg=restTemplate.getForObject(uri, String.class);
-		 */
+	public String removeCourseFromCatalogue(int courseId) throws HttpClientErrorException, URISyntaxException{
+		
+		  //URI uri=new URI("http://course-service/course/removecourse/"+courseId);
+		  //String responseMsg=restTemplate.getForObject(uri, String.class);
 		String responseMsg=userFeignClient.removeCourse(courseId);
 		return responseMsg;
 	}
-
+	
+	@Override
+	public Course getCourseFromCatalogue(int courseId){
+		
+		//URI uri=new URI("http://course-service/course/get/"+courseId);
+		//Course course=restTemplate.getForObject(uri, Course.class);
+		Course course=userFeignClient.getCourse(courseId);
+		return course;
+	}
+	
+	@Override
+	public List<Course> getAllCourseFromCatalogue(){
+			
+			//URI uri=new URI("http://course-service/course/getall");
+			//List<Course> course=restTemplate.getForObject(uri, List.class);
+			List<Course> listOfCourse=userFeignClient.getAllCourses();
+			return listOfCourse;
+		}
 }
